@@ -1,84 +1,136 @@
-import HelperUtils.{CreateLogger, InfraHelper}
+import HelperUtils.CreateLogger
 import com.typesafe.config.{Config, ConfigFactory}
+import org.cloudbus.cloudsim.allocationpolicies.{VmAllocationPolicy, VmAllocationPolicyBestFit, VmAllocationPolicyFirstFit, VmAllocationPolicyRoundRobin, VmAllocationPolicySimple}
 import org.cloudbus.cloudsim.brokers.DatacenterBrokerSimple
-import org.cloudbus.cloudsim.cloudlets.Cloudlet
+import org.cloudbus.cloudsim.cloudlets.{Cloudlet, CloudletSimple}
 import org.cloudbus.cloudsim.core.CloudSim
-import org.cloudbus.cloudsim.datacenters.{Datacenter, DatacenterSimple}
+import org.cloudbus.cloudsim.datacenters.DatacenterSimple
 import org.cloudbus.cloudsim.hosts.{Host, HostSimple}
+import org.cloudbus.cloudsim.network.topologies.BriteNetworkTopology
 import org.cloudbus.cloudsim.power.models.PowerModelHostSimple
 import org.cloudbus.cloudsim.resources.{Pe, PeSimple}
-import org.cloudbus.cloudsim.schedulers.vm.VmSchedulerTimeShared
+import org.cloudbus.cloudsim.schedulers.cloudlet.{CloudletSchedulerSpaceShared, CloudletSchedulerTimeShared}
+import org.cloudbus.cloudsim.schedulers.vm.{VmSchedulerSpaceShared, VmSchedulerTimeShared}
+import org.cloudbus.cloudsim.utilizationmodels.{UtilizationModelDynamic, UtilizationModelFull}
+import org.cloudbus.cloudsim.vms.{Vm, VmSimple}
 import org.cloudsimplus.builders.tables.{CloudletsTableBuilder, TextTableColumn}
 import org.slf4j.Logger
 
-import java.util.Comparator
+import scala.collection.immutable.List
+import scala.util.Random
+import java.util
+import java.util.Comparator.comparingLong
+import java.util.{ArrayList, Comparator}
 import scala.jdk.CollectionConverters.*
-import java.util.ArrayList
 
 object Simulation3 {
-  val logger: Logger = CreateLogger(classOf[Simulation3])
-  val config: Config = ConfigFactory.load("simulation3.conf").getConfig("simulation3")
-  private val HOSTS: Int = config.getInt("HOSTS")
-  private val HOST_PES: Int = config.getInt("HOST_PES")
+  val logger: Logger = CreateLogger(classOf[Simulation1])
+  val config: Config = ConfigFactory.load("Simulation3.conf").getConfig("Simulation3")
+  val mainConfig: Config = ConfigFactory.load("application.conf").getConfig("applicationConfigParams")
 
-  private val VMS: Int = config.getInt("VMS")
-  private val VM_PES: Int = config.getInt("VM_PES")
-
-  private val CLOUDLETS: Int = config.getInt("CLOUDLETS")
-  private val CLOUDLET_PES: Int = config.getInt("CLOUDLET_PES")
-  private val CLOUDLET_LENGTH: Int = config.getInt("CLOUDLET_LENGTH")
-  private val HOST_START_UP_DELAY = 5
-
-  private val HOST_SHUT_DOWN_DELAY = 3
-
-  private val HOST_START_UP_POWER = 5
-
-  private val HOST_SHUT_DOWN_POWER = 3
-  private val STATIC_POWER: Int = 35
-  private val MAX_POWER: Int = 50
-  private val SCHEDULING_INTERVAL = 10
   def main(args: Array[String]): Unit = {
     executeSimulation()
   }
 
-  def executeSimulation(): Unit = {
-    val simulation = new CloudSim()
-    val hostList = new ArrayList[Host](HOSTS)
+  def createPowerHostList(): List[Host] = {
+    val hostConfig = config.getConfigList("HOSTS")
+    val numberOfHosts = config.getInt("HOSTS_COUNT")
+    logger.info("The number of hosts" + numberOfHosts)
+    val hosts = (0 until numberOfHosts).map(index => {
+      val typeOfHost = Random.between(0, hostConfig.size())
+      val hostConfigVal = hostConfig.get(typeOfHost)
+      val HOST_PES = hostConfigVal.getInt("PES")
 
-    def createPowerHost(id: Int): Host = {
-      val peList = new ArrayList[Pe](HOST_PES)
-      //List of Host's CPUs (Processing Elements, PEs)
-      (0 to HOST_PES - 1).map((index) => {
-        peList.add(new PeSimple(1000))
+      logger.info("The type of host" + typeOfHost)
+      logger.info("The hosts values:" + hostConfigVal)
+
+      val peList = new util.ArrayList[Pe](hostConfigVal.getInt("PES"))
+      (0 to HOST_PES - 1).map(index => {
+        peList.add(new PeSimple(hostConfigVal.getInt("MIPS")))
       })
-      val ram = 2048 //in Megabytes
-      val bw = 10000 //in Megabits/s
-      val storage = 1000000
-      val vmScheduler = new VmSchedulerTimeShared()
-      val host = new HostSimple(ram, bw, storage, peList)
-      val powerModel = new PowerModelHostSimple(MAX_POWER, STATIC_POWER)
-      powerModel.setStartupDelay(HOST_START_UP_DELAY).setShutDownDelay(HOST_SHUT_DOWN_DELAY).setStartupPower(HOST_START_UP_POWER).setShutDownPower(HOST_SHUT_DOWN_POWER)
-      host.setVmScheduler(vmScheduler).setPowerModel(powerModel)
-      host.setId(id)
+      val ram: Long = hostConfigVal.getInt("RAM")
+      val bw: Long = hostConfigVal.getInt("BDW")
+      val storage: Long = hostConfigVal.getInt("STORAGE")
+
+      val host = new HostSimple(ram, bw, storage, peList, false)
+      hostConfigVal.getString("VM_SCHEDULER") match
+        case "Time" => host.setVmScheduler(new VmSchedulerTimeShared())
+        case "Space" => host.setVmScheduler(new VmSchedulerSpaceShared())
+
+      val powerModel = new PowerModelHostSimple(config.getInt("MAX_POWER"), config.getInt("STATIC_POWER"))
+      powerModel.setStartupDelay(config.getInt("HOST_START_UP_DELAY")).setShutDownDelay(config.getInt("HOST_SHUT_DOWN_DELAY")).setStartupPower(config.getInt("HOST_START_UP_POWER")).setShutDownPower(config.getInt("HOST_SHUT_DOWN_POWER"))
+      host.setPowerModel(powerModel)
       host.enableUtilizationStats()
       host
-    }
+    }).toList
+    hosts
+  }
 
-    def createDatacenter(): Datacenter = {
-      (0 to HOSTS - 1).map((index) => {
-        val host = createPowerHost(index)
-        hostList.add(host)
-      })
 
-      val dc = new DatacenterSimple(simulation, hostList)
-      dc.setSchedulingInterval(SCHEDULING_INTERVAL)
-      dc
+  def getTypeOfAllocation(): VmAllocationPolicy = {
+    val alloactionPolicy = config.getString("ALLOCATION_POLICY")
+    alloactionPolicy match {
+      case "ROUND_ROBIN" => new VmAllocationPolicyRoundRobin()
+      case "SIMPLE" => new VmAllocationPolicySimple()
+      case "BEST_FIT" => new VmAllocationPolicyBestFit()
+      case "FIRST_FIT" => new VmAllocationPolicyFirstFit()
     }
-    val datacenter0 = createDatacenter()
-    val vmList = InfraHelper.createVms(VMS, 1000,VM_PES, 512, 1000, 10000)
-    val cloudletList = InfraHelper.createCloudlets(1000, 1000, CLOUDLET_LENGTH, CLOUDLETS, CLOUDLET_PES)
+  }
+
+  def getCloudletSchedularType(typeVal: String) = {
+    typeVal match {
+      case "Time" => new CloudletSchedulerTimeShared()
+      case "Space" => new CloudletSchedulerSpaceShared()
+    }
+  }
+
+  def createVmsList(): List[Vm] = {
+    val vmsConfig = config.getConfigList("VMS")
+    val noOfVms = config.getInt("VMS_COUNT")
+    val vms = (0 to noOfVms - 1).map(index => {
+      val typeOfVm = Random.between(0, vmsConfig.size())
+      val vmConfigVal = vmsConfig.get(typeOfVm)
+
+      logger.info("The type of host" + typeOfVm)
+      logger.info("The hosts values:" + vmConfigVal)
+
+      val vm = new VmSimple(index, 1000, vmConfigVal.getInt("VM_PES"))
+        .setRam(vmConfigVal.getInt("RAM"))
+        .setBw(vmConfigVal.getInt("BDW"))
+        .setSize(vmConfigVal.getInt("SIZE"))
+        .setCloudletScheduler(getCloudletSchedularType(vmConfigVal.getString("CLOUDLET_SCHEDULER")))
+      vm.enableUtilizationStats()
+      vm
+    }).toList
+    vms
+  }
+
+  def createCloudlets(): List[Cloudlet] = {
+    val cloudletConfig = config.getConfigList("CLOUDLETS")
+    val noOfCloudlets = config.getInt("CLOUDLETS_COUNT")
+    val cloudlets = (0 to noOfCloudlets - 1).map(index => {
+      val typeOfCloudlet = Random.between(0, cloudletConfig.size())
+      val cloudletConfigVal = cloudletConfig.get(typeOfCloudlet)
+      val utilization: UtilizationModelDynamic = new UtilizationModelDynamic(0.2)
+      val cloudlet: Cloudlet = new CloudletSimple(index, cloudletConfigVal.getInt("LENGTH"), cloudletConfigVal.getInt("PES"))
+        .setFileSize(cloudletConfigVal.getInt("SIZE"))
+        .setUtilizationModelCpu(new UtilizationModelFull).setUtilizationModelRam(utilization).setUtilizationModelBw(utilization)
+      cloudlet
+    }).toList
+    cloudlets
+  }
+  def executeSimulation(): Unit = {
+    val simulation = new CloudSim()
+    val hostList: List[Host] = createPowerHostList()
+    val vmsList: List[Vm] = createVmsList()
+    val cloudletList: List[Cloudlet] = createCloudlets()
+    val dataCenter = new DatacenterSimple(simulation, hostList.asJava, getTypeOfAllocation())
+    val schedulingInterval = config.getInt("SCHEDULING_INTERVAL")
+    dataCenter.setSchedulingInterval(schedulingInterval)
+
     val broker = new DatacenterBrokerSimple(simulation)
-    broker.submitVmList(vmList.asJava)
+
+    broker.submitVmList(vmsList.asJava)
     broker.submitCloudletList(cloudletList.asJava)
 
     simulation.start()
@@ -86,9 +138,9 @@ object Simulation3 {
     val finishedCloudlets = broker.getCloudletFinishedList()
 
     val resourceUsageTable = new CloudletsTableBuilder(finishedCloudlets)
-      .addColumn(new TextTableColumn("CPU Usage", "seconds"),  cloudlet => "%.2f".format(cloudlet.getActualCpuTime))
-      .addColumn(new TextTableColumn("RAM Usage", "Mb"),  cloudlet => "%.2f".format(cloudlet.getUtilizationOfRam))
-      .addColumn(new TextTableColumn("Bandwidth", "Mb"),  cloudlet => "%.2f".format(cloudlet.getUtilizationOfBw))
+      .addColumn(new TextTableColumn("CPU Usage", "seconds"), cloudlet => "%.2f".format(cloudlet.getActualCpuTime))
+      .addColumn(new TextTableColumn("RAM Usage", "Mb"), cloudlet => "%.2f".format(cloudlet.getUtilizationOfRam))
+      .addColumn(new TextTableColumn("Bandwidth", "Mb"), cloudlet => "%.2f".format(cloudlet.getUtilizationOfBw))
 
     resourceUsageTable.build()
   }
