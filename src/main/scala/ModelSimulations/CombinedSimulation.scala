@@ -16,36 +16,40 @@ import java.util.Comparator
 import scala.collection.immutable.List
 import scala.jdk.CollectionConverters.*
 
+/*This is a simulation of ring network topology with a single broker of Iaas, Saas, Paas datacenters.*/
 object CombinedSimulation {
-  val logger: Logger = CreateLogger(classOf[CombinedSimulation])
+  val logger: Logger = CreateLogger(classOf[CombinedSimulation]) /* Define the logger*/
+  /* Intiate the config parameters for number of hosts, cloudlets, vms etc.*/
   val config1: Config = ConfigFactory.load("iaas.conf").getConfig("iaas")
   val config2: Config = ConfigFactory.load("saas.conf").getConfig("saas")
   val config3: Config = ConfigFactory.load("paas.conf").getConfig("paas")
   val mainConfig: Config = ConfigFactory.load("application.conf").getConfig("applicationconfigparams")
 
   def main(args: Array[String]): Unit = {
-    executeSimulation()
+    executeSimulation() /* main control of execution starts here*/
   }
 
   def executeSimulation(): Unit= {
     logger.info("**************Entering CombinedSimulation ********************")
-    val simulation = new CloudSim()
+    val simulation = new CloudSim() /* Intiate simulation*/
 
-    val hostList1: List[Host] = IaasSimulation.createHostList()
-    val vmsList1: List[Vm] = IaasSimulation.createVmsList()
-    val cloudletList1: List[Cloudlet] = IaasSimulation.createCloudlets()
-    val dataCenter1 = new DatacenterSimple(simulation, hostList1.asJava, IaasSimulation.getTypeOfAllocation())
+    /* create hosts, vms, cloudlets for Iaas configuration*/
+    val hostList1: List[Host] = IaasSimulation.createHostList() /* define the hosts */
+    val vmsList1: List[Vm] = IaasSimulation.createVmsList() /* define the vms */
+    val cloudletList1: List[Cloudlet] = IaasSimulation.createCloudlets() /* define the cloudlets*/
+    val dataCenter1 = new DatacenterSimple(simulation, hostList1.asJava, IaasSimulation.getTypeOfAllocation())/* Intiate the datacenter*/
     val schedulingInterval1 = config1.getInt("SCHEDULING_INTERVAL")
     dataCenter1.setSchedulingInterval(schedulingInterval1)
 
-    val hostList2: List[Host] = SaasSimulation.createHostList()
+    /* create hosts, vms, cloudlets for Saas configuration*/
+    val hostList2: List[Host] = SaasSimulation.createHostList() 
     val vmsList2: List[Vm] = SaasSimulation.createVmsList()
     val cloudletList2: List[Cloudlet] = SaasSimulation.createCloudlets()
     val dataCenter2 = new DatacenterSimple(simulation, hostList2.asJava, SaasSimulation.getTypeOfAllocation())
     val schedulingInterval2 = config2.getInt("SCHEDULING_INTERVAL")
     dataCenter2.setSchedulingInterval(schedulingInterval2)
 
-
+    /* create hosts, vms, cloudlets for Paas configuration*/
     val hostList3: List[Host] = PaasSimulation.createHostList()
     val vmsList3: List[Vm] = PaasSimulation.createVmsList()
     val cloudletList3: List[Cloudlet] = PaasSimulation.createCloudlets()
@@ -56,12 +60,13 @@ object CombinedSimulation {
 
     val broker = new DatacenterBrokerSimple(simulation)
 
-    val vmlists = List(vmsList1, vmsList2, vmsList3)
+    val vmlists = List(vmsList1, vmsList2, vmsList3) 
     val cloudletList = List(cloudletList1, cloudletList2, cloudletList3)
     
-    broker.submitVmList((vmlists.flatMap(_.zipWithIndex).sortBy(_._2).map(_._1)).asJava)
-    broker.submitCloudletList((cloudletList.flatMap(_.zipWithIndex).sortBy(_._2).map(_._1)).asJava)
+    broker.submitVmList((vmlists.flatMap(_.zipWithIndex).sortBy(_._2).map(_._1)).asJava) /* submit the vms to be create*/
+    broker.submitCloudletList((cloudletList.flatMap(_.zipWithIndex).sortBy(_._2).map(_._1)).asJava) /* submit the cloudlets*/ 
 
+    /* create a network of 3 datacenters with one broker in ring configuration*/
     val networkTopology = new BriteNetworkTopology()
     simulation.setNetworkTopology(networkTopology)
     networkTopology.addLink(dataCenter1, broker, mainConfig.getDouble("NETWORK_BW"), mainConfig.getDouble("NETWORK_LATENCY"))
@@ -73,6 +78,7 @@ object CombinedSimulation {
 
     val finishedCloudlets = broker.getCloudletFinishedList()
     finishedCloudlets.sort(Comparator.comparingLong((cloudlet: Cloudlet) => cloudlet.getVm.getId))
+    /* Print summary of results of simulation*/
     new CloudletsTableBuilder(finishedCloudlets).build()
     logger.info("**************Exiting CombinedSimulation********************")
   }

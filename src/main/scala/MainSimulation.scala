@@ -24,33 +24,35 @@ import java.util.Comparator.comparingLong
 import java.util.{ArrayList, Comparator}
 import scala.jdk.CollectionConverters.*
 
+/* Main simulation is the combination of simulation1, simulation2, simulation3*/
 object MainSimulation {
-  val logger: Logger = CreateLogger(classOf[MainSimulation])
+  val logger: Logger = CreateLogger(classOf[MainSimulation]) /* Define the logger*/
+  /* Intiate the config parameters for number of hosts, cloudlets, vms etc.*/
   val config: Config = ConfigFactory.load("mainsimulation.conf").getConfig("mainsimulation")
   val mainConfig: Config = ConfigFactory.load("application.conf").getConfig("applicationconfigparams")
 
   def main(args: Array[String]): Unit = {
-    executeSimulation()
+    executeSimulation() /* main method where all the simulation execution takes place*/
   }
 
   def executeSimulation(): Unit = {
     logger.info("**************Entering Simulation1 ********************")
-    val simulation = new CloudSim()
-    val hostList: List[Host] = InfraHelper.createPowerHostList(config)
-    val vmsList: List[Vm] = InfraHelper.createVmsList(config)
-    val cloudletList: List[Cloudlet] = InfraHelper.createCloudlets(config)
-    val dataCenter = new DatacenterSimple(simulation, hostList.asJava, InfraHelper.getTypeOfAllocation(config))
+    val simulation = new CloudSim() /* Intiate simulation*/
+    val hostList: List[Host] = InfraHelper.createPowerHostList(config) /* define the hosts */
+    val vmsList: List[Vm] = InfraHelper.createVmsList(config) /* define the vms */
+    val cloudletList: List[Cloudlet] = InfraHelper.createCloudlets(config) /* define the cloudlets*/
+    val dataCenter = new DatacenterSimple(simulation, hostList.asJava, InfraHelper.getTypeOfAllocation(config)) /* Intiate the datacenter*/
     val schedulingInterval = config.getInt("SCHEDULING_INTERVAL")
     dataCenter.setSchedulingInterval(schedulingInterval)
 
-    val broker = new DatacenterBrokerSimple(simulation)
+    val broker = new DatacenterBrokerSimple(simulation) /* Intitate the broker*/
 
-    val networkTopology = new BriteNetworkTopology()
+    val networkTopology = new BriteNetworkTopology() /* Intitalise the network topology to be used*/
     simulation.setNetworkTopology(networkTopology)
     networkTopology.addLink(dataCenter, broker, mainConfig.getDouble("NETWORK_BW"), mainConfig.getDouble("NETWORK_LATENCY"))
 
-    broker.submitVmList(vmsList.asJava)
-    broker.submitCloudletList(cloudletList.asJava)
+    broker.submitVmList(vmsList.asJava) /* submit the vms to be create*/
+    broker.submitCloudletList(cloudletList.asJava) /* submit the cloudlets*/
 
     simulation.start()
 
@@ -61,7 +63,7 @@ object MainSimulation {
       .addColumn(new TextTableColumn("CPU Usage", "seconds"), cloudlet => "%.2f".format(cloudlet.getActualCpuTime))
       .addColumn(new TextTableColumn("RAM Usage", "Mb"), cloudlet => "%.2f".format(cloudlet.getUtilizationOfRam))
       .addColumn(new TextTableColumn("Bandwidth", "Mb"), cloudlet => "%.2f".format(cloudlet.getUtilizationOfBw))
-
+    /* Print summary of results of simulation*/
     resourceUsageTable.build()
 
     logger.info(vmsList.asJava.size().toString)

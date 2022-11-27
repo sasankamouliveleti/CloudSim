@@ -23,29 +23,31 @@ import java.util.Comparator.comparingLong
 import java.util.{ArrayList, Comparator}
 import scala.jdk.CollectionConverters.*
 
+/*Results out the RAM, CPU usage and different other metrics of VMs*/
 object Simulation3 {
-  val logger: Logger = CreateLogger(classOf[Simulation3])
+  val logger: Logger = CreateLogger(classOf[Simulation3]) /* Define the logger*/
+  /* Intiate the config parameters for number of hosts, cloudlets, vms etc.*/
   val config: Config = ConfigFactory.load("simulation3.conf").getConfig("simulation3")
   val mainConfig: Config = ConfigFactory.load("application.conf").getConfig("applicationconfigparams")
 
   def main(args: Array[String]): Unit = {
-    executeSimulation()
+    executeSimulation() /* main method where all the simulation execution takes place*/
   }
 
   def executeSimulation(): Unit = {
     logger.info("**************Entering Simulation3********************")
-    val simulation = new CloudSim()
-    val hostList: List[Host] = InfraHelper.createPowerHostList(config)
-    val vmsList: List[Vm] = InfraHelper.createVmsList(config)
-    val cloudletList: List[Cloudlet] = InfraHelper.createCloudlets(config)
-    val dataCenter = new DatacenterSimple(simulation, hostList.asJava, InfraHelper.getTypeOfAllocation(config))
+    val simulation = new CloudSim() /* Intiate simulation*/
+    val hostList: List[Host] = InfraHelper.createPowerHostList(config) /* define the hosts */
+    val vmsList: List[Vm] = InfraHelper.createVmsList(config) /* define the vms */
+    val cloudletList: List[Cloudlet] = InfraHelper.createCloudlets(config) /* define the cloudlets*/
+    val dataCenter = new DatacenterSimple(simulation, hostList.asJava, InfraHelper.getTypeOfAllocation(config)) /* Intiate the datacenter*/
     val schedulingInterval = config.getInt("SCHEDULING_INTERVAL")
     dataCenter.setSchedulingInterval(schedulingInterval)
 
-    val broker = new DatacenterBrokerSimple(simulation)
+    val broker = new DatacenterBrokerSimple(simulation) /* Intitate the broker*/
 
-    broker.submitVmList(vmsList.asJava)
-    broker.submitCloudletList(cloudletList.asJava)
+    broker.submitVmList(vmsList.asJava) /* submit the vms to be create*/
+    broker.submitCloudletList(cloudletList.asJava) /* submit the cloudlets*/
 
     simulation.start()
 
@@ -55,7 +57,7 @@ object Simulation3 {
       .addColumn(new TextTableColumn("CPU Usage", "seconds"), cloudlet => "%.2f".format(cloudlet.getActualCpuTime))
       .addColumn(new TextTableColumn("RAM Usage", "Mb"), cloudlet => "%.2f".format(cloudlet.getUtilizationOfRam))
       .addColumn(new TextTableColumn("Bandwidth", "Mb"), cloudlet => "%.2f".format(cloudlet.getUtilizationOfBw))
-
+    /* Print summary of results of simulation and costs*/
     resourceUsageTable.build()
 
     logger.info("**************Exiting Simulation3********************")

@@ -93,6 +93,7 @@ object InfraHelper {
 
   def getTypeOfAllocation(config: Config): VmAllocationPolicy = {
     val alloactionPolicy = config.getString("ALLOCATION_POLICY")
+    logger.info("The allocation policy used is" + alloactionPolicy)
     alloactionPolicy match {
       case "ROUND_ROBIN" => new VmAllocationPolicyRoundRobin()
       case "SIMPLE" => new VmAllocationPolicySimple()
@@ -102,6 +103,7 @@ object InfraHelper {
   }
 
   def getCloudletSchedularType(typeVal: String) = {
+    logger.info("The clouletscheduler used is" + typeVal)
     typeVal match {
       case "Time" => new CloudletSchedulerTimeShared()
       case "Space" => new CloudletSchedulerSpaceShared()

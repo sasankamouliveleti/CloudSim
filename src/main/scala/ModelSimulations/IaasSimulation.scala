@@ -22,12 +22,14 @@ import java.util.function.Consumer
 import scala.util.Random
 import scala.jdk.CollectionConverters.*
 
+/*This is a simulation of Iaas datacenter, its behavior while allocating resources and handling cloudlets*/
 object IaasSimulation {
-  val logger: Logger = CreateLogger(classOf[IaasSimulation])
+  val logger: Logger = CreateLogger(classOf[IaasSimulation]) /* Define the logger*/
+  /* Intiate the config parameters for number of hosts, cloudlets, vms etc.*/
   val config: Config = ConfigFactory.load("iaas.conf").getConfig("iaas")
 
   def main(args: Array[String]): Unit = {
-    executeSimulation()
+    executeSimulation() /* main method where all the simulation execution takes place*/
   }
   def createHostList(): List[Host] = {
     logger.info("**************Entering Simulation1 ********************")
@@ -111,23 +113,24 @@ object IaasSimulation {
 
   def executeSimulation(): Unit = {
     logger.info("**************Entering IaasSimulation ********************")
-    val simulation = new CloudSim()
-    val hostList: List[Host] = createHostList()
-    val vmsList : List[Vm] = createVmsList()
-    val cloudletList: List[Cloudlet] = createCloudlets()
-    val dataCenter = new DatacenterSimple(simulation, hostList.asJava, getTypeOfAllocation())
+    val simulation = new CloudSim() /* Intiate simulation*/
+    val hostList: List[Host] = createHostList()  /* define the hosts */
+    val vmsList : List[Vm] = createVmsList()  /* define the vms */
+    val cloudletList: List[Cloudlet] = createCloudlets() /* define the cloudlets*/
+    val dataCenter = new DatacenterSimple(simulation, hostList.asJava, getTypeOfAllocation()) /* Intiate the datacenter*/
     val schedulingInterval = config.getInt("SCHEDULING_INTERVAL")
     dataCenter.setSchedulingInterval(schedulingInterval)
 
-    val broker = new DatacenterBrokerSimple(simulation)
+    val broker = new DatacenterBrokerSimple(simulation) /* Intitate the broker*/
 
-    broker.submitVmList(vmsList.asJava)
-    broker.submitCloudletList(cloudletList.asJava)
+    broker.submitVmList(vmsList.asJava) /* submit the vms to be create*/
+    broker.submitCloudletList(cloudletList.asJava) /* submit the cloudlets*/
 
     simulation.start()
 
-    val finishedCloudlets = broker.getCloudletFinishedList()
+    val finishedCloudlets = broker.getCloudletFinishedList() /* Get all the finished cloudlets*/
     finishedCloudlets.sort(Comparator.comparingLong((cloudlet: Cloudlet) => cloudlet.getVm.getId))
+    /* Print summary of results of simulation*/
     new CloudletsTableBuilder(finishedCloudlets).build()
 
     logger.info("**************Exiting IaasSimulation********************")
