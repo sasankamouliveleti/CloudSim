@@ -24,7 +24,7 @@ import java.util.{ArrayList, Comparator}
 import scala.jdk.CollectionConverters.*
 object Simulation1 {
   val logger: Logger = CreateLogger(classOf[Simulation1])
-  val config: Config = ConfigFactory.load("Simulation1.conf").getConfig("Simulation1")
+  val config: Config = ConfigFactory.load("simulation1.conf").getConfig("Simulation1")
   val mainConfig: Config = ConfigFactory.load("application.conf").getConfig("applicationConfigParams")
   def main(args: Array[String]): Unit = {
     executeSimulation()

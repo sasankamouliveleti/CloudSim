@@ -25,7 +25,7 @@ import scala.jdk.CollectionConverters.*
 
 object Simulation3 {
   val logger: Logger = CreateLogger(classOf[Simulation1])
-  val config: Config = ConfigFactory.load("Simulation3.conf").getConfig("Simulation3")
+  val config: Config = ConfigFactory.load("simulation3.conf").getConfig("Simulation3")
   val mainConfig: Config = ConfigFactory.load("application.conf").getConfig("applicationConfigParams")
 
   def main(args: Array[String]): Unit = {
