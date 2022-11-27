@@ -181,8 +181,6 @@ object MainSimulation {
       }
     }).sum
     logger.info(s"The total cost is ${cost}")
-
-
   }
 }
 

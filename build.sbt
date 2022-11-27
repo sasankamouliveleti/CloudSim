@@ -1,4 +1,4 @@
-ThisBuild / version := "0.1.0-SNAPSHOT"
+ThisBuild / version := "homework3_sasanka"
 
 ThisBuild / scalaVersion := "3.1.3"
 
@@ -6,6 +6,15 @@ lazy val root = (project in file("."))
   .settings(
     name := "CloudSimOrg"
   )
+
+enablePlugins(
+  JavaAppPackaging,
+  DockerPlugin
+)
+
+mainClass in Compile := Some("MainSimulation")
+
+dockerBaseImage:= "openjdk:19"
 
 val logbackVersion = "1.3.0-alpha10"
 val sfl4sVersion = "2.0.0-alpha5"
@@ -20,6 +29,8 @@ assembly / assemblyMergeStrategy := {
   case PathList("META-INF", xs @ _*) => MergeStrategy.discard
   case x => MergeStrategy.first
 }
+
+
 
 libraryDependencies ++= Seq(
   "ch.qos.logback" % "logback-core" % logbackVersion,
