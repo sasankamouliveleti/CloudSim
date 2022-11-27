@@ -24,12 +24,13 @@ import scala.jdk.CollectionConverters.*
 
 object IaasSimulation {
   val logger: Logger = CreateLogger(classOf[IaasSimulation])
-  val config: Config = ConfigFactory.load("Iaas.conf").getConfig("Iaas")
+  val config: Config = ConfigFactory.load("iaas.conf").getConfig("iaas")
 
   def main(args: Array[String]): Unit = {
     executeSimulation()
   }
   def createHostList(): List[Host] = {
+    logger.info("**************Entering Simulation1 ********************")
     val hostConfig = config.getConfigList("HOSTS")
     val numberOfHosts = config.getInt("HOSTS_COUNT")
     logger.info("The number of hosts" + numberOfHosts)
@@ -109,6 +110,7 @@ object IaasSimulation {
   }
 
   def executeSimulation(): Unit = {
+    logger.info("**************Entering IaasSimulation ********************")
     val simulation = new CloudSim()
     val hostList: List[Host] = createHostList()
     val vmsList : List[Vm] = createVmsList()
@@ -127,6 +129,8 @@ object IaasSimulation {
     val finishedCloudlets = broker.getCloudletFinishedList()
     finishedCloudlets.sort(Comparator.comparingLong((cloudlet: Cloudlet) => cloudlet.getVm.getId))
     new CloudletsTableBuilder(finishedCloudlets).build()
+
+    logger.info("**************Exiting IaasSimulation********************")
   }
 }
 

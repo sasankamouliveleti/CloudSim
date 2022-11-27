@@ -1,4 +1,4 @@
-import HelperUtils.CreateLogger
+import HelperUtils.{CreateLogger, InfraHelper}
 import com.typesafe.config.{Config, ConfigFactory}
 import org.cloudbus.cloudsim.allocationpolicies.{VmAllocationPolicy, VmAllocationPolicyBestFit, VmAllocationPolicyFirstFit, VmAllocationPolicyRoundRobin, VmAllocationPolicySimple}
 import org.cloudbus.cloudsim.brokers.DatacenterBrokerSimple
@@ -25,60 +25,14 @@ import java.util.function.Supplier
 import java.util.{ArrayList, Comparator}
 import scala.jdk.CollectionConverters.*
 object Simulation2 {
-  val logger: Logger = CreateLogger(classOf[Simulation1])
-  val config: Config = ConfigFactory.load("simulation2.conf").getConfig("Simulation2")
-  val mainConfig: Config = ConfigFactory.load("application.conf").getConfig("applicationConfigParams")
+  val logger: Logger = CreateLogger(classOf[Simulation2])
+  val config: Config = ConfigFactory.load("simulation2.conf").getConfig("simulation2")
+  val mainConfig: Config = ConfigFactory.load("application.conf").getConfig("applicationconfigparams")
 
   def main(args: Array[String]): Unit = {
     executeSimulation()
   }
 
-  def createHostList(): List[Host] = {
-    val hostConfig = config.getConfigList("HOSTS")
-    val numberOfHosts = config.getInt("HOSTS_COUNT")
-    logger.info("The number of hosts" + numberOfHosts)
-    val hosts = (0 until numberOfHosts).map(index => {
-      val typeOfHost = Random.between(0, hostConfig.size())
-      val hostConfigVal = hostConfig.get(typeOfHost)
-      val HOST_PES = hostConfigVal.getInt("PES")
-
-      logger.info("The type of host" + typeOfHost)
-      logger.info("The hosts values:" + hostConfigVal)
-
-      val peList = new util.ArrayList[Pe](hostConfigVal.getInt("PES"))
-      (0 to HOST_PES - 1).map(index => {
-        peList.add(new PeSimple(hostConfigVal.getInt("MIPS")))
-      })
-      val ram: Long = hostConfigVal.getInt("RAM")
-      val bw: Long = hostConfigVal.getInt("BDW")
-      val storage: Long = hostConfigVal.getInt("STORAGE")
-
-      val host = new HostSimple(ram, bw, storage, peList, false)
-      hostConfigVal.getString("VM_SCHEDULER") match
-        case "Time" => host.setVmScheduler(new VmSchedulerTimeShared())
-        case "Space" => host.setVmScheduler(new VmSchedulerSpaceShared())
-      host
-    }).toList
-    hosts
-  }
-  
-  def getTypeOfAllocation(): VmAllocationPolicy = {
-    val alloactionPolicy = config.getString("ALLOCATION_POLICY")
-    alloactionPolicy match {
-      case "ROUND_ROBIN" => new VmAllocationPolicyRoundRobin()
-      case "SIMPLE" => new VmAllocationPolicySimple()
-      case "BEST_FIT" => new VmAllocationPolicyBestFit()
-      case "FIRST_FIT" => new VmAllocationPolicyFirstFit()
-    }
-  }
-  
-  def getCloudletSchedularType(typeVal: String) = {
-    typeVal match {
-      case "Time" => new CloudletSchedulerTimeShared()
-      case "Space" => new CloudletSchedulerSpaceShared()
-    }
-  }
-  
   def isVmOverloaded(vm: Vm) = vm.getCpuPercentUtilization > mainConfig.getDouble("OVERLOADTHRESH")
   
   def createScalableVmsList(): List[Vm] = {
@@ -95,13 +49,13 @@ object Simulation2 {
         .setRam(vmConfigVal.getInt("RAM"))
         .setBw(vmConfigVal.getInt("BDW"))
         .setSize(vmConfigVal.getInt("SIZE"))
-        .setCloudletScheduler(getCloudletSchedularType(vmConfigVal.getString("CLOUDLET_SCHEDULER")))
+        .setCloudletScheduler(InfraHelper.getCloudletSchedularType(vmConfigVal.getString("CLOUDLET_SCHEDULER")))
       val supplierVM: Supplier[Vm] = new Supplier[Vm] {
         override def get(): Vm = new VmSimple(index, 1000, vmConfigVal.getInt("VM_PES"))
           .setRam(vmConfigVal.getInt("RAM"))
           .setBw(vmConfigVal.getInt("BDW"))
           .setSize(vmConfigVal.getInt("SIZE"))
-          .setCloudletScheduler(getCloudletSchedularType(vmConfigVal.getString("CLOUDLET_SCHEDULER")))
+          .setCloudletScheduler(InfraHelper.getCloudletSchedularType(vmConfigVal.getString("CLOUDLET_SCHEDULER")))
       }
       val horizontalScaling = new HorizontalVmScalingSimple()
       horizontalScaling.setVmSupplier(supplierVM).setOverloadPredicate(isVmOverloaded)
@@ -111,26 +65,13 @@ object Simulation2 {
     vms
   }
 
-  def createCloudlets(): List[Cloudlet] = {
-    val cloudletConfig = config.getConfigList("CLOUDLETS")
-    val noOfCloudlets = config.getInt("CLOUDLETS_COUNT")
-    val cloudlets = (0 to noOfCloudlets - 1).map(index => {
-      val typeOfCloudlet = Random.between(0, cloudletConfig.size())
-      val cloudletConfigVal = cloudletConfig.get(typeOfCloudlet)
-      val utilization: UtilizationModelDynamic = new UtilizationModelDynamic(0.2)
-      val cloudlet: Cloudlet = new CloudletSimple(index, cloudletConfigVal.getInt("LENGTH"), cloudletConfigVal.getInt("PES"))
-        .setFileSize(cloudletConfigVal.getInt("SIZE"))
-        .setUtilizationModelCpu(new UtilizationModelFull).setUtilizationModelRam(utilization).setUtilizationModelBw(utilization)
-      cloudlet
-    }).toList
-    cloudlets
-  }
   def executeSimulation(): Unit = {
+    logger.info("**************Entering Simulation2 ********************")
     val simulation = new CloudSim()
-    val hostList: List[Host] = createHostList()
+    val hostList: List[Host] = InfraHelper.createHostList(config)
     val vmsList: List[Vm] = createScalableVmsList()
-    val cloudletList: List[Cloudlet] = createCloudlets()
-    val dataCenter = new DatacenterSimple(simulation, hostList.asJava, getTypeOfAllocation())
+    val cloudletList: List[Cloudlet] = InfraHelper.createCloudlets(config)
+    val dataCenter = new DatacenterSimple(simulation, hostList.asJava, InfraHelper.getTypeOfAllocation(config))
     val schedulingInterval = config.getInt("SCHEDULING_INTERVAL")
     dataCenter.setSchedulingInterval(schedulingInterval)
 
@@ -160,7 +101,7 @@ object Simulation2 {
     }).sum
     logger.info(s"The total cost is ${cost}")
 
-
+    logger.info("**************Exiting Simulation2********************")
   }
 }
 

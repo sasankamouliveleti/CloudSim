@@ -18,16 +18,17 @@ import scala.jdk.CollectionConverters.*
 
 object CombinedSimulation {
   val logger: Logger = CreateLogger(classOf[CombinedSimulation])
-  val config1: Config = ConfigFactory.load("Iaas.conf").getConfig("Iaas")
-  val config2: Config = ConfigFactory.load("Saas.conf").getConfig("Saas")
-  val config3: Config = ConfigFactory.load("Paas.conf").getConfig("Paas")
-  val mainConfig: Config = ConfigFactory.load("application.conf").getConfig("applicationConfigParams")
+  val config1: Config = ConfigFactory.load("iaas.conf").getConfig("iaas")
+  val config2: Config = ConfigFactory.load("saas.conf").getConfig("saas")
+  val config3: Config = ConfigFactory.load("paas.conf").getConfig("paas")
+  val mainConfig: Config = ConfigFactory.load("application.conf").getConfig("applicationconfigparams")
 
   def main(args: Array[String]): Unit = {
     executeSimulation()
   }
 
   def executeSimulation(): Unit= {
+    logger.info("**************Entering CombinedSimulation ********************")
     val simulation = new CloudSim()
 
     val hostList1: List[Host] = IaasSimulation.createHostList()
@@ -73,7 +74,7 @@ object CombinedSimulation {
     val finishedCloudlets = broker.getCloudletFinishedList()
     finishedCloudlets.sort(Comparator.comparingLong((cloudlet: Cloudlet) => cloudlet.getVm.getId))
     new CloudletsTableBuilder(finishedCloudlets).build()
-
+    logger.info("**************Exiting CombinedSimulation********************")
   }
 }
 

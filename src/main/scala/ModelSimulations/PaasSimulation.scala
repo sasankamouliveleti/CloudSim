@@ -23,7 +23,7 @@ import scala.util.Random
 import scala.jdk.CollectionConverters.*
 object PaasSimulation {
   val logger: Logger = CreateLogger(classOf[PaasSimulation])
-  val config: Config = ConfigFactory.load("Saas.conf").getConfig("Saas")
+  val config: Config = ConfigFactory.load("paas.conf").getConfig("paas")
 
   def main(args: Array[String]): Unit = {
     executeSimulation()
@@ -111,6 +111,7 @@ object PaasSimulation {
   }
 
   def executeSimulation(): Unit = {
+    logger.info("**************Entering PaasSimulation ********************")
     val simulation = new CloudSim()
     val hostList: List[Host] = createHostList()
     val vmsList: List[Vm] = createVmsList()
@@ -129,6 +130,8 @@ object PaasSimulation {
     val finishedCloudlets = broker.getCloudletFinishedList()
     finishedCloudlets.sort(Comparator.comparingLong((cloudlet: Cloudlet) => cloudlet.getVm.getId))
     new CloudletsTableBuilder(finishedCloudlets).build()
+
+    logger.info("**************Exiting PaasSimulation********************")
   }
 }
 class PaasSimulation

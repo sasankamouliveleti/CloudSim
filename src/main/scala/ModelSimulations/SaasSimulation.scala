@@ -25,7 +25,7 @@ import scala.jdk.CollectionConverters.*
 
 object SaasSimulation {
   val logger: Logger = CreateLogger(classOf[SaasSimulation])
-  val config: Config = ConfigFactory.load("Saas.conf").getConfig("Saas")
+  val config: Config = ConfigFactory.load("saas.conf").getConfig("saas")
 
   def main(args: Array[String]): Unit = {
     executeSimulation()
@@ -112,6 +112,7 @@ object SaasSimulation {
     cloudlets
   }
   def executeSimulation(): Unit = {
+    logger.info("**************Entering SaasSimulation ********************")
     val simulation = new CloudSim()
     val hostList: List[Host] = createHostList()
     val vmsList: List[Vm] = createVmsList()
@@ -130,6 +131,8 @@ object SaasSimulation {
     val finishedCloudlets = broker.getCloudletFinishedList()
     finishedCloudlets.sort(Comparator.comparingLong((cloudlet: Cloudlet) => cloudlet.getVm.getId))
     new CloudletsTableBuilder(finishedCloudlets).build()
+
+    logger.info("**************Exiting SaasSimulation********************")
   }
 }
 

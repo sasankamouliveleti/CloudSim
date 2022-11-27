@@ -1,4 +1,4 @@
-<h1>Homework 1 - Cloud Organization Simulation</h1>
+<h1>Homework 3 - Cloud Organization Simulation</h1>
 
 <h2>Submission by: Sasanka Mouli Subrahmanya Sri Veleti</h2>
 
@@ -55,7 +55,7 @@ as there are multiple main classes you will be prompted with the class to choose
 <li>IaasSimulation - This is a simulation of Iaas datacenter, its behavior while allocating resources and handling cloudlets</li>
 <li>SaasSimulation - This is a simulation of Saas datacenter, its behavior while allocating resources and handling cloudlets</li>
 <li>PaasSimulation - This is a simulation of Paas datacenter, its behavior while allocating resources and handling cloudlets</li>
-<li>CombinedSimulation - This is a simulation of ring network topology of Iaas, Saas, Paas datacenters.</li>
+<li>CombinedSimulation - This is a simulation of ring network topology with a single broker of Iaas, Saas, Paas datacenters.</li>
 </ol>
 </ol>
 
