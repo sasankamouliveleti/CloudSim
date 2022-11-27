@@ -12,7 +12,7 @@ enablePlugins(
   DockerPlugin
 )
 
-//mainClass in Compile := Some("MainSimulation")
+mainClass in Compile := Some("RunAllSimulations")
 
 dockerBaseImage:= "openjdk:19"
 

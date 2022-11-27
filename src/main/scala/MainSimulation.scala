@@ -36,7 +36,7 @@ object MainSimulation {
   }
 
   def executeSimulation(): Unit = {
-    logger.info("**************Entering Simulation1 ********************")
+    logger.info("**************Entering MainSimulation ********************")
     val simulation = new CloudSim() /* Intiate simulation*/
     val hostList: List[Host] = InfraHelper.createPowerHostList(config) /* define the hosts */
     val vmsList: List[Vm] = InfraHelper.createVmsList(config) /* define the vms */

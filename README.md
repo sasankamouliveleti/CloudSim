@@ -63,9 +63,9 @@ Now, let us explore each Simulation along with its architecture diagram and resu
 
 <h3>Disucssion on Various Simulations Architecture and Results</h3>
 <h3>MainSimulation</h3>
-<p>The MainSimulation has one datacenter with hosts, vms and cloudlets created based on parameters in mainsimulation.conf. Here we make use of horizontal scalable vms and access the CPU utilization, power utilization during the simulation.</p>
+<p>The MainSimulation has one datacenter with hosts, vms and cloudlets created based on parameters in mainsimulation.conf. Here we make use of horizontal scalable vms and analyse the CPU utilization, power utilization during the simulation.</p>
 <p>The Architecture diagram is below:</p>
-insert architecuter
+<img src="img/MainSimulation.png"/>
 <p>Now let us compare the performance with different scheduling policies.</p>
 <ol>
 <li><h4>Vm Allocation Policy - Simple, Cloudlet Scheduling - TimeShared.</h4></li>
@@ -248,7 +248,7 @@ insert architecuter
 
 <h3>IaasSimulation</h3>
 <p>From the definition of Infrastructure as a Service we know that the cloud provider has control over the hardware and the cloud consumer has control over the virtual machines available and cloudlets</p>
-insert architecture
+<img src="img/Iaas.png"/>
 
 <p>A simulation is ran based on the parameters from iaas.conf is ran and the results are below</p>
 
@@ -277,7 +277,7 @@ insert architecture
 
 <h3>SaasSimulation</h3>
 <p>From the definition of Software as a Service we know that the cloud provider has control over VMs, Hosts, Datacenter characteristics and cloulet characteristics and the consumer can only specify number of cloudlets required for execution.</p>
-insert architecture
+<img src="img/SaasSimulation.png"/>
 
 <p>A simulation is ran based on the parameters from saas.conf is ran and the results are below</p>
 
@@ -318,7 +318,7 @@ insert architecture
 
 <h3>PaasSimulation</h3>
 <p>From the definition of Platform as a Service we know that the cloud provider has control over Vms, hosts and datacenter charateristics and the consumer has control on cloudlet characteristics and number of vms required to execute the cloudlets.</p>
-insert architecture
+<img src="img/PaasSimulation.png"/>
 
 <p>A simulation is ran based on the parameters from paas.conf is ran and the results are below</p>
 
@@ -347,7 +347,7 @@ insert architecture
 
 <h3>Combined Simulation with 3 Datacenters(Iaas, Saas, Paas)</h3>
 <p>A Ring topology is formed with a single broker and 3 datacenters Iaas, Saas, Paas</p>
-insert architecture
+<img src="img/Combined.png"/>
 
 <p>A simulation is ran based on the parameters from combinedsimulation.conf is ran and the results are below</p>
 
