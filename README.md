@@ -62,8 +62,8 @@ as there are multiple main classes you will be prompted with the class to choose
 Now, let us explore each Simulation along with its architecture diagram and results. I am leaving out the Simulations 1,2,3 because the MainSimulation is culmination of said 3.
 
 <h3>Disucssion on Various Simulations Architecture and Results</h3>
-<h3>MainSimulation.scala</h3>
-<p>The MainSimulation has one datacenter with hosts, vms and cloudlets created based on parameters in mainsimulation.conf</p>
+<h3>MainSimulation</h3>
+<p>The MainSimulation has one datacenter with hosts, vms and cloudlets created based on parameters in mainsimulation.conf. Here we make use of horizontal scalable vms and access the CPU utilization, power utilization during the simulation.</p>
 <p>The Architecture diagram is below:</p>
 insert architecuter
 <p>Now let us compare the performance with different scheduling policies.</p>
@@ -244,3 +244,171 @@ insert architecuter
 ```
 </ol>
 
+<p>From the above simulations we can infer that using Round Robin vm allocation policy along with Space Shared cloudlet scheduling costs less.</p>
+
+<h3>IaasSimulation</h3>
+<p>From the definition of Infrastructure as a Service we know that the cloud provider has control over the hardware and the cloud consumer has control over the virtual machines available and cloudlets</p>
+insert architecture
+
+<p>A simulation is ran based on the parameters from iaas.conf is ran and the results are below</p>
+
+```
+================== Simulation finished at time 20.44 ==================
+
+
+
+                                               SIMULATION RESULTS
+
+|Cloudlet|Status |DC|Host|Host PEs |VM|VM PEs   |CloudletLen|FinishedLen|CloudletPEs|StartTime|FinishTime|ExecTime
+|--------|-------|--|----|---------|--|---------|-----------|-----------|-----------|---------|----------|--------
+|      ID|       |ID|  ID|CPU cores|ID|CPU cores|         MI|         MI|  CPU cores|  Seconds|   Seconds| Seconds
+|       0|SUCCESS| 1|   0|        5| 0|        3|      10000|      10000|          2|        0|        10|      10
+|       5|SUCCESS| 1|   0|        5| 0|        3|      10000|      10000|          1|        0|        10|      10
+|       1|SUCCESS| 1|   1|        5| 1|        3|      10000|      10000|          2|        0|        10|      10
+|       6|SUCCESS| 1|   1|        5| 1|        3|      10000|      10000|          2|       10|        20|      10
+|       2|SUCCESS| 1|   2|        5| 2|        2|      10000|      10000|          1|        0|        10|      10
+|       7|SUCCESS| 1|   2|        5| 2|        2|      10000|      10000|          1|        0|        10|      10
+|       3|SUCCESS| 1|   3|        5| 3|        3|      10000|      10000|          2|        0|        10|      10
+|       8|SUCCESS| 1|   3|        5| 3|        3|      10000|      10000|          2|       10|        20|      10
+|       4|SUCCESS| 1|   4|        5| 4|        3|      10000|      10000|          1|        0|        10|      10
+|       9|SUCCESS| 1|   4|        5| 4|        3|      10000|      10000|          1|        0|        10|      10
+15:51:13.125 [main] INFO  ModelSimulations.IaasSimulation - **************Exiting IaasSimulation********************
+```
+
+<h3>SaasSimulation</h3>
+<p>From the definition of Software as a Service we know that the cloud provider has control over VMs, Hosts, Datacenter characteristics and cloulet characteristics and the consumer can only specify number of cloudlets required for execution.</p>
+insert architecture
+
+<p>A simulation is ran based on the parameters from saas.conf is ran and the results are below</p>
+
+```
+================== Simulation finished at time 35.32 ==================
+
+
+
+                                               SIMULATION RESULTS
+
+|Cloudlet|Status |DC|Host|Host PEs |VM|VM PEs   |CloudletLen|FinishedLen|CloudletPEs|StartTime|FinishTime|ExecTime
+|--------|-------|--|----|---------|--|---------|-----------|-----------|-----------|---------|----------|--------
+|      ID|       |ID|  ID|CPU cores|ID|CPU cores|         MI|         MI|  CPU cores|  Seconds|   Seconds| Seconds
+|       0|SUCCESS| 1|   0|        4| 0|        3|      10000|      10000|          1|        0|        10|      10
+|       5|SUCCESS| 1|   0|        4| 0|        3|      10000|      10000|          2|        0|        10|      10
+|      10|SUCCESS| 1|   0|        4| 0|        3|      10000|      10000|          1|       10|        20|      10
+|      15|SUCCESS| 1|   0|        4| 0|        3|      10000|      10000|          1|       10|        20|      10
+|      20|SUCCESS| 1|   0|        4| 0|        3|      10000|      10000|          2|       20|        30|      10
+|       1|SUCCESS| 1|   0|        4| 1|        2|      10000|      10000|          2|        0|        35|      35
+|       6|SUCCESS| 1|   0|        4| 1|        2|      10000|      10000|          1|        0|        35|      35
+|      11|SUCCESS| 1|   0|        4| 1|        2|      10000|      10000|          2|        0|        35|      35
+|      16|SUCCESS| 1|   0|        4| 1|        2|      10000|      10000|          1|        0|        35|      35
+|      21|SUCCESS| 1|   0|        4| 1|        2|      10000|      10000|          1|        0|        35|      35
+|       2|SUCCESS| 1|   1|        4| 2|        2|      10000|      10000|          2|        0|        30|      30
+|       7|SUCCESS| 1|   1|        4| 2|        2|      10000|      10000|          1|        0|        30|      30
+|      12|SUCCESS| 1|   1|        4| 2|        2|      10000|      10000|          1|        0|        30|      30
+|      17|SUCCESS| 1|   1|        4| 2|        2|      10000|      10000|          2|        0|        30|      30
+|       3|SUCCESS| 1|   1|        4| 3|        3|      10000|      10000|          2|        0|        10|      10
+|      18|SUCCESS| 1|   1|        4| 3|        3|      10000|      10000|          1|        0|        10|      10
+|       8|SUCCESS| 1|   1|        4| 3|        3|      10000|      10000|          2|       10|        20|      10
+|      13|SUCCESS| 1|   1|        4| 3|        3|      10000|      10000|          2|       20|        30|      10
+|       4|SUCCESS| 1|   2|        4| 4|        3|      10000|      10000|          1|        0|        10|      10
+|       9|SUCCESS| 1|   2|        4| 4|        3|      10000|      10000|          1|        0|        10|      10
+|      19|SUCCESS| 1|   2|        4| 4|        3|      10000|      10000|          1|        0|        10|      10
+|      14|SUCCESS| 1|   2|        4| 4|        3|      10000|      10000|          2|       10|        20|      10
+16:04:00.257 [main] INFO  ModelSimulations.SaasSimulation - **************Exiting SaasSimulation********************
+```
+
+<h3>PaasSimulation</h3>
+<p>From the definition of Platform as a Service we know that the cloud provider has control over Vms, hosts and datacenter charateristics and the consumer has control on cloudlet characteristics and number of vms required to execute the cloudlets.</p>
+insert architecture
+
+<p>A simulation is ran based on the parameters from paas.conf is ran and the results are below</p>
+
+```
+================== Simulation finished at time 20.44 ==================
+
+
+
+                                               SIMULATION RESULTS
+
+|Cloudlet|Status |DC|Host|Host PEs |VM|VM PEs   |CloudletLen|FinishedLen|CloudletPEs|StartTime|FinishTime|ExecTime
+|--------|-------|--|----|---------|--|---------|-----------|-----------|-----------|---------|----------|--------
+|      ID|       |ID|  ID|CPU cores|ID|CPU cores|         MI|         MI|  CPU cores|  Seconds|   Seconds| Seconds
+|       0|SUCCESS| 1|   0|        5| 0|        3|      10000|      10000|          2|        0|        10|      10
+|       5|SUCCESS| 1|   0|        5| 0|        3|      10000|      10000|          2|       10|        20|      10
+|       1|SUCCESS| 1|   1|        4| 1|        2|      10000|      10000|          2|        0|        15|      15
+|       6|SUCCESS| 1|   1|        4| 1|        2|      10000|      10000|          1|        0|        15|      15
+|       2|SUCCESS| 1|   2|        5| 2|        3|      10000|      10000|          2|        0|        10|      10
+|       7|SUCCESS| 1|   2|        5| 2|        3|      10000|      10000|          2|       10|        20|      10
+|       3|SUCCESS| 1|   3|        5| 3|        2|      10000|      10000|          1|        0|        15|      15
+|       8|SUCCESS| 1|   3|        5| 3|        2|      10000|      10000|          2|        0|        15|      15
+|       4|SUCCESS| 1|   4|        5| 4|        3|      10000|      10000|          1|        0|        10|      10
+|       9|SUCCESS| 1|   4|        5| 4|        3|      10000|      10000|          1|        0|        10|      10
+16:06:25.369 [main] INFO  ModelSimulations.PaasSimulation - **************Exiting PaasSimulation********************
+```
+
+<h3>Combined Simulation with 3 Datacenters(Iaas, Saas, Paas)</h3>
+<p>A Ring topology is formed with a single broker and 3 datacenters Iaas, Saas, Paas</p>
+insert architecture
+
+<p>A simulation is ran based on the parameters from combinedsimulation.conf is ran and the results are below</p>
+
+```
+================== Simulation finished at time 90.86 ==================
+
+
+
+                                               SIMULATION RESULTS
+
+|Cloudlet|Status |DC|Host|Host PEs |VM|VM PEs   |CloudletLen|FinishedLen|CloudletPEs|StartTime|FinishTime|ExecTime
+|--------|-------|--|----|---------|--|---------|-----------|-----------|-----------|---------|----------|--------
+|      ID|       |ID|  ID|CPU cores|ID|CPU cores|         MI|         MI|  CPU cores|  Seconds|   Seconds| Seconds
+|       0|SUCCESS| 1|   0|        5| 0|        3|      10000|      10000|          2|       50|        60|      10
+|       5|SUCCESS| 1|   0|        5| 0|        3|      10000|      10000|          1|       50|        60|      10
+|       0|SUCCESS| 1|   1|        4| 0|        3|      10000|      10000|          2|       50|        60|      10
+|       5|SUCCESS| 1|   1|        4| 0|        3|      10000|      10000|          1|       50|        60|      10
+|       0|SUCCESS| 1|   2|        5| 0|        3|      10000|      10000|          2|       50|        60|      10
+|      10|SUCCESS| 1|   0|        5| 0|        3|      10000|      10000|          2|       60|        70|      10
+|      11|SUCCESS| 1|   1|        4| 0|        3|      10000|      10000|          1|       60|        70|      10
+|       5|SUCCESS| 1|   2|        5| 0|        3|      10000|      10000|          2|       60|        70|      10
+|      12|SUCCESS| 1|   2|        5| 0|        3|      10000|      10000|          2|       71|        80|      10
+|       1|SUCCESS| 1|   4|        5| 1|        3|      10000|      10000|          1|       50|        60|      10
+|       6|SUCCESS| 1|   4|        5| 1|        3|      10000|      10000|          1|       50|        60|      10
+|      14|SUCCESS| 1|   4|        5| 1|        3|      10000|      10000|          1|       50|        60|      10
+|       1|SUCCESS| 1|   3|        5| 1|        2|      10000|      10000|          1|       50|        65|      15
+|       6|SUCCESS| 1|   3|        5| 1|        2|      10000|      10000|          1|       50|        65|      15
+|      13|SUCCESS| 1|   3|        5| 1|        2|      10000|      10000|          1|       50|        65|      15
+|       1|SUCCESS| 1|   5|        4| 1|        2|      10000|      10000|          2|       50|        75|      25
+|       6|SUCCESS| 1|   5|        4| 1|        2|      10000|      10000|          2|       50|        75|      25
+|      15|SUCCESS| 1|   5|        4| 1|        2|      10000|      10000|          1|       50|        75|      25
+|       2|SUCCESS| 1|   3|        5| 2|        3|      10000|      10000|          1|       50|        60|      10
+|       7|SUCCESS| 1|   3|        5| 2|        3|      10000|      10000|          1|       50|        60|      10
+|      17|SUCCESS| 1|   3|        5| 2|        3|      10000|      10000|          1|       50|        60|      10
+|       2|SUCCESS| 1|   5|        4| 2|        3|      10000|      10000|          1|       50|        60|      10
+|       7|SUCCESS| 1|   5|        4| 2|        3|      10000|      10000|          1|       50|        60|      10
+|      18|SUCCESS| 1|   5|        4| 2|        3|      10000|      10000|          1|       50|        60|      10
+|       2|SUCCESS| 1|   0|        5| 2|        2|      10000|      10000|          2|       50|        80|      30
+|       7|SUCCESS| 1|   0|        5| 2|        2|      10000|      10000|          2|       50|        80|      30
+|      16|SUCCESS| 1|   0|        5| 2|        2|      10000|      10000|          2|       50|        80|      30
+|       3|SUCCESS| 2|   0|        4| 3|        3|      10000|      10000|          1|       50|        60|      10
+|       8|SUCCESS| 2|   0|        4| 3|        3|      10000|      10000|          1|       50|        60|      10
+|      21|SUCCESS| 2|   0|        4| 3|        3|      10000|      10000|          2|       60|        70|      10
+|       3|SUCCESS| 1|   2|        5| 3|        2|      10000|      10000|          2|       50|        75|      25
+|       8|SUCCESS| 1|   2|        5| 3|        2|      10000|      10000|          2|       50|        75|      25
+|      20|SUCCESS| 1|   2|        5| 3|        2|      10000|      10000|          1|       50|        75|      25
+|       3|SUCCESS| 1|   1|        4| 3|        2|      10000|      10000|          2|       50|        80|      30
+|       8|SUCCESS| 1|   1|        4| 3|        2|      10000|      10000|          2|       50|        80|      30
+|      19|SUCCESS| 1|   1|        4| 3|        2|      10000|      10000|          2|       50|        80|      30
+|       4|SUCCESS| 2|   1|        4| 4|        3|      10000|      10000|          1|       50|        60|      10
+|       9|SUCCESS| 2|   1|        4| 4|        3|      10000|      10000|          2|       50|        60|      10
+|       4|SUCCESS| 2|   2|        4| 4|        3|      10000|      10000|          1|       50|        60|      10
+|       9|SUCCESS| 2|   2|        4| 4|        3|      10000|      10000|          1|       50|        60|      10
+|       4|SUCCESS| 2|   3|        4| 4|        3|      10000|      10000|          2|       50|        60|      10
+|       9|SUCCESS| 2|   3|        4| 4|        3|      10000|      10000|          1|       50|        60|      10
+16:08:35.247 [main] INFO  ModelSimulations.CombinedSimulation - **************Exiting CombinedSimulation********************
+```
+
+<h3>Dockerization of the project:</h3>
+<p>There are basically 2 ways to dockerize a sbt project</p>
+<ol>
+<li>Using Docker file</li>
+<li>Using Sbt native packager</li>
+</ol>
