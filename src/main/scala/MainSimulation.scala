@@ -13,27 +13,26 @@ import org.cloudbus.cloudsim.schedulers.cloudlet.{CloudletSchedulerSpaceShared, 
 import org.cloudbus.cloudsim.schedulers.vm.{VmSchedulerSpaceShared, VmSchedulerTimeShared}
 import org.cloudbus.cloudsim.utilizationmodels.{UtilizationModelDynamic, UtilizationModelFull}
 import org.cloudbus.cloudsim.vms.{Vm, VmSimple}
-import org.cloudsimplus.autoscaling.HorizontalVmScalingSimple
-import org.cloudsimplus.builders.tables.CloudletsTableBuilder
+import org.cloudsimplus.builders.tables.{CloudletsTableBuilder, TextTableColumn}
 import org.slf4j.Logger
 
 import scala.collection.immutable.List
 import scala.util.Random
 import java.util
 import java.util.Comparator.comparingLong
-import java.util.function.Supplier
 import java.util.{ArrayList, Comparator}
 import scala.jdk.CollectionConverters.*
-object Simulation2 {
+
+object MainSimulation {
   val logger: Logger = CreateLogger(classOf[Simulation1])
-  val config: Config = ConfigFactory.load("Simulation2.conf").getConfig("Simulation2")
+  val config: Config = ConfigFactory.load("MainSimulation.conf").getConfig("MainSimulation")
   val mainConfig: Config = ConfigFactory.load("application.conf").getConfig("applicationConfigParams")
 
   def main(args: Array[String]): Unit = {
     executeSimulation()
   }
 
-  def createHostList(): List[Host] = {
+  def createPowerHostList(): List[Host] = {
     val hostConfig = config.getConfigList("HOSTS")
     val numberOfHosts = config.getInt("HOSTS_COUNT")
     logger.info("The number of hosts" + numberOfHosts)
@@ -57,11 +56,17 @@ object Simulation2 {
       hostConfigVal.getString("VM_SCHEDULER") match
         case "Time" => host.setVmScheduler(new VmSchedulerTimeShared())
         case "Space" => host.setVmScheduler(new VmSchedulerSpaceShared())
+
+      val powerModel = new PowerModelHostSimple(config.getInt("MAX_POWER"), config.getInt("STATIC_POWER"))
+      powerModel.setStartupDelay(config.getInt("HOST_START_UP_DELAY")).setShutDownDelay(config.getInt("HOST_SHUT_DOWN_DELAY")).setStartupPower(config.getInt("HOST_START_UP_POWER")).setShutDownPower(config.getInt("HOST_SHUT_DOWN_POWER"))
+      host.setPowerModel(powerModel)
+      host.enableUtilizationStats()
       host
     }).toList
     hosts
   }
-  
+
+
   def getTypeOfAllocation(): VmAllocationPolicy = {
     val alloactionPolicy = config.getString("ALLOCATION_POLICY")
     alloactionPolicy match {
@@ -71,17 +76,15 @@ object Simulation2 {
       case "FIRST_FIT" => new VmAllocationPolicyFirstFit()
     }
   }
-  
+
   def getCloudletSchedularType(typeVal: String) = {
     typeVal match {
       case "Time" => new CloudletSchedulerTimeShared()
       case "Space" => new CloudletSchedulerSpaceShared()
     }
   }
-  
-  def isVmOverloaded(vm: Vm) = vm.getCpuPercentUtilization > mainConfig.getDouble("OVERLOADTHRESH")
-  
-  def createScalableVmsList(): List[Vm] = {
+
+  def createVmsList(): List[Vm] = {
     val vmsConfig = config.getConfigList("VMS")
     val noOfVms = config.getInt("VMS_COUNT")
     val vms = (0 to noOfVms - 1).map(index => {
@@ -96,16 +99,7 @@ object Simulation2 {
         .setBw(vmConfigVal.getInt("BDW"))
         .setSize(vmConfigVal.getInt("SIZE"))
         .setCloudletScheduler(getCloudletSchedularType(vmConfigVal.getString("CLOUDLET_SCHEDULER")))
-      val supplierVM: Supplier[Vm] = new Supplier[Vm] {
-        override def get(): Vm = new VmSimple(index, 1000, vmConfigVal.getInt("VM_PES"))
-          .setRam(vmConfigVal.getInt("RAM"))
-          .setBw(vmConfigVal.getInt("BDW"))
-          .setSize(vmConfigVal.getInt("SIZE"))
-          .setCloudletScheduler(getCloudletSchedularType(vmConfigVal.getString("CLOUDLET_SCHEDULER")))
-      }
-      val horizontalScaling = new HorizontalVmScalingSimple()
-      horizontalScaling.setVmSupplier(supplierVM).setOverloadPredicate(isVmOverloaded)
-      vm.setHorizontalScaling(horizontalScaling)
+      vm.enableUtilizationStats()
       vm
     }).toList
     vms
@@ -125,10 +119,11 @@ object Simulation2 {
     }).toList
     cloudlets
   }
+  
   def executeSimulation(): Unit = {
     val simulation = new CloudSim()
-    val hostList: List[Host] = createHostList()
-    val vmsList: List[Vm] = createScalableVmsList()
+    val hostList: List[Host] = createPowerHostList()
+    val vmsList: List[Vm] = createVmsList()
     val cloudletList: List[Cloudlet] = createCloudlets()
     val dataCenter = new DatacenterSimple(simulation, hostList.asJava, getTypeOfAllocation())
     val schedulingInterval = config.getInt("SCHEDULING_INTERVAL")
@@ -147,7 +142,34 @@ object Simulation2 {
 
     val finishedCloudlets = broker.getCloudletFinishedList()
     finishedCloudlets.sort(Comparator.comparingLong((cloudlet: Cloudlet) => cloudlet.getVm.getId))
-    new CloudletsTableBuilder(finishedCloudlets).build()
+    //new CloudletsTableBuilder(finishedCloudlets).build()
+    val resourceUsageTable = new CloudletsTableBuilder(finishedCloudlets)
+      .addColumn(new TextTableColumn("CPU Usage", "seconds"), cloudlet => "%.2f".format(cloudlet.getActualCpuTime))
+      .addColumn(new TextTableColumn("RAM Usage", "Mb"), cloudlet => "%.2f".format(cloudlet.getUtilizationOfRam))
+      .addColumn(new TextTableColumn("Bandwidth", "Mb"), cloudlet => "%.2f".format(cloudlet.getUtilizationOfBw))
+
+    resourceUsageTable.build()
+
+    logger.info(vmsList.asJava.size().toString)
+    //vmList.asJava.sort(comparingLong((vm: Vm) => vm.getHost.getId))
+    logger.info("VM ID | CPU Mean Usage | Power Consumption Mean")
+    vmsList.asJava.forEach((vm) => {
+      val powerModel = vm.getHost.getPowerModel
+      val hostStaticPower = {
+        if (powerModel.isInstanceOf[PowerModelHostSimple]) {
+          powerModel.getPower()
+        } else {
+          0
+        }
+      }
+      val hostStaticPowerByVm = hostStaticPower / vm.getHost.getVmCreatedList.size
+      //VM CPU utilization relative to the host capacity
+      val vmRelativeCpuUtilization = vm.getCpuUtilizationStats.getMean / vm.getHost.getVmCreatedList.size
+      val vmPower = powerModel.getPower(vmRelativeCpuUtilization) - hostStaticPower + hostStaticPowerByVm // W
+      val cpuStats = vm.getCpuUtilizationStats
+
+      logger.info(vm.getId.toString + "|" + (cpuStats.getMean * 100).ceil + "|" + vmPower.ceil)
+    })
 
     val finshedVms: List[VmSimple] = broker.getVmCreatedList.asScala.toList
     logger.info("The finished vms size is " + finshedVms.length)
@@ -164,4 +186,4 @@ object Simulation2 {
   }
 }
 
-class Simulation2
+class MainSimulation
