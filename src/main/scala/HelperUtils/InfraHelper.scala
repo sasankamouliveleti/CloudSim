@@ -28,6 +28,7 @@ import scala.jdk.CollectionConverters.*
 object InfraHelper {
   val logger: Logger = CreateLogger(classOf[InfraHelper])
 
+  /* Helper method to create hosts*/
   def createHostList(config: Config): List[Host] = {
     val hostConfig = config.getConfigList("HOSTS")
     val numberOfHosts = config.getInt("HOSTS_COUNT")
@@ -56,6 +57,7 @@ object InfraHelper {
     }).toList
     hosts
   }
+  /* helper method to create hosts with power statistics*/
   def createPowerHostList(config: Config): List[Host] = {
     val hostConfig = config.getConfigList("HOSTS")
     val numberOfHosts = config.getInt("HOSTS_COUNT")
@@ -90,7 +92,7 @@ object InfraHelper {
     hosts
   }
 
-
+  /* Method to get allocation type based on config*/
   def getTypeOfAllocation(config: Config): VmAllocationPolicy = {
     val alloactionPolicy = config.getString("ALLOCATION_POLICY")
     logger.info("The allocation policy used is" + alloactionPolicy)
@@ -102,6 +104,7 @@ object InfraHelper {
     }
   }
 
+  /* Method to get schedulartype based on input*/
   def getCloudletSchedularType(typeVal: String) = {
     logger.info("The clouletscheduler used is" + typeVal)
     typeVal match {
@@ -110,6 +113,7 @@ object InfraHelper {
     }
   }
 
+  /* create list of vms*/
   def createVmsList(config: Config): List[Vm] = {
     val vmsConfig = config.getConfigList("VMS")
     val noOfVms = config.getInt("VMS_COUNT")
@@ -131,6 +135,7 @@ object InfraHelper {
     vms
   }
 
+  /* create cloudlets based on config parameters*/
   def createCloudlets(config: Config): List[Cloudlet] = {
     val cloudletConfig = config.getConfigList("CLOUDLETS")
     val noOfCloudlets = config.getInt("CLOUDLETS_COUNT")

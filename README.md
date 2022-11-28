@@ -248,7 +248,7 @@ sbt "runMain MainSimulation"
 ```
 </ol>
 
-<p>From the above simulations we can infer that using Round Robin vm allocation policy along with Space Shared cloudlet scheduling costs less.</p>
+<p>From the above simulations we can infer that using Round Robin vm allocation policy along with Space Shared cloudlet scheduling costs less. It may also because of using scalable virtual machines.</p>
 
 <h3>IaasSimulation</h3>
 <p>From the definition of Infrastructure as a Service we know that the cloud provider has control over the hardware and the cloud consumer has control over the virtual machines available and cloudlets</p>
