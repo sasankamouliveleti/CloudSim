@@ -66,7 +66,11 @@ Now, let us explore each Simulation along with its architecture diagram and resu
 <p>The MainSimulation has one datacenter with hosts, vms and cloudlets created based on parameters in mainsimulation.conf. Here we make use of horizontal scalable vms and analyse the CPU utilization, power utilization during the simulation.</p>
 <p>The Architecture diagram is below:</p>
 <img src="img/MainSimulation.png"/>
-<p>Now let us compare the performance with different scheduling policies.</p>
+<p>Now let us compare the performance with different scheduling policies. Run the following command to execute MainSimulation</p>
+
+```
+sbt "runMain MainSimulation"
+```
 <ol>
 <li><h4>Vm Allocation Policy - Simple, Cloudlet Scheduling - TimeShared.</h4></li>
 <p>Results:</p>
@@ -250,7 +254,12 @@ Now, let us explore each Simulation along with its architecture diagram and resu
 <p>From the definition of Infrastructure as a Service we know that the cloud provider has control over the hardware and the cloud consumer has control over the virtual machines available and cloudlets</p>
 <img src="img/Iaas.png"/>
 
-<p>A simulation is ran based on the parameters from iaas.conf is ran and the results are below</p>
+<p>A simulation is ran based on the parameters from iaas.conf by using below command and the results are below</p>
+
+```
+sbt "runMain IaasSimulation"
+```
+
 
 ```
 ================== Simulation finished at time 20.44 ==================
@@ -279,7 +288,11 @@ Now, let us explore each Simulation along with its architecture diagram and resu
 <p>From the definition of Software as a Service we know that the cloud provider has control over VMs, Hosts, Datacenter characteristics and cloulet characteristics and the consumer can only specify number of cloudlets required for execution.</p>
 <img src="img/SaasSimulation.png"/>
 
-<p>A simulation is ran based on the parameters from saas.conf is ran and the results are below</p>
+<p>A simulation is ran based on the parameters from saas.conf is ran by using below command and the results are below</p>
+
+```
+sbt "runMain SaasSimulation"
+```
 
 ```
 ================== Simulation finished at time 35.32 ==================
@@ -320,7 +333,11 @@ Now, let us explore each Simulation along with its architecture diagram and resu
 <p>From the definition of Platform as a Service we know that the cloud provider has control over Vms, hosts and datacenter charateristics and the consumer has control on cloudlet characteristics and number of vms required to execute the cloudlets.</p>
 <img src="img/PaasSimulation.png"/>
 
-<p>A simulation is ran based on the parameters from paas.conf is ran and the results are below</p>
+<p>A simulation is ran based on the parameters from paas.conf is ran by using below command and the results are below</p>
+
+```
+sbt "runMain PaasSimulation"
+```
 
 ```
 ================== Simulation finished at time 20.44 ==================
@@ -350,6 +367,10 @@ Now, let us explore each Simulation along with its architecture diagram and resu
 <img src="img/Combined.png"/>
 
 <p>A simulation is ran based on the parameters from combinedsimulation.conf is ran and the results are below</p>
+
+```
+sbt "runMain CombinedSimulation"
+```
 
 ```
 ================== Simulation finished at time 90.86 ==================
@@ -407,8 +428,75 @@ Now, let us explore each Simulation along with its architecture diagram and resu
 ```
 
 <h3>Dockerization of the project:</h3>
+<p>This is project has been made into a docker image and pushed to docker hub and accessed using https://hub.docker.com/r/mouliveleti/homework3_sasanka</p>
 <p>There are basically 2 ways to dockerize a sbt project</p>
 <ol>
 <li>Using Docker file</li>
-<li>Using Sbt native packager</li>
+<li>Using Sbt Native Packager</li>
+</ol>
+
+<h5>Using Docker file</h5>
+
+```
+FROM openjdk:19
+
+ENV SBT_VERSION 1.6.2
+
+RUN curl -L -o sbt-$SBT_VERSION.tgz https://github.com/sbt/sbt/releases/download/v$SBT_VERSION/sbt-$SBT_VERSION.tgz
+RUN tar -xf sbt-$SBT_VERSION.tgz
+
+WORKDIR /app
+
+ADD . /app
+
+CMD /sbt/bin/sbt "runMain RunAllSimulations"
+```
+
+Above is the Docker file used to create a docker image by following the below commands
+
+```
+docker build -t imagename:version1 .
+```
+Once the image is created inorder to run, run the following command
+
+```
+docker run imagename:version1
+```
+
+<h5>Using SBT Native Packager</h5>
+
+<ol>
+<li>Add the following plugin in plugins.sbt</li>
+
+```
+addSbtPlugin("com.github.sbt" % "sbt-native-packager" % "1.9.4")
+```
+
+<li>Add the docker and java plugins in build.sbt as well as the baseimage as openjdk:19 along with main class to run</li>
+
+```
+enablePlugins(
+  JavaAppPackaging,
+  DockerPlugin
+)
+
+mainClass in Compile := Some("RunAllSimulations")
+
+dockerBaseImage:= "openjdk:19"
+```
+</ol>
+
+<h4>Command to run docker image from docker hub</h4>
+
+```
+docker run mouliveleti/homework3_sasanka:v1
+```
+
+<h3>Test Cases:</h3>
+<ol>
+<li>Check if the config parameter network bandwidth should correctly assigned</li>
+<li>Check if the config parameter network latency should correctly assigned</li>
+<li>Check whethr correct number of cloudlets are created.</li>
+<li>Check whether correct number of hosts are created.</li>
+<li>Check whether correct number of vms are created.</li>
 </ol>
