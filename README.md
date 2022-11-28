@@ -364,7 +364,7 @@ sbt "runMain PaasSimulation"
 
 <h3>Combined Simulation with 3 Datacenters(Iaas, Saas, Paas)</h3>
 <p>A Ring Network Topology is formed with a single broker and 3 datacenters Iaas, Saas, Paas</p>
-<img src="img/combinedsimulation.png"/>
+<img src="img/combinedsimulation.png" height="300px"/>
 
 <p>A simulation is ran based on the parameters from combinedsimulation.conf is ran and the results are below</p>
 
@@ -426,7 +426,12 @@ sbt "runMain CombinedSimulation"
 |       9|SUCCESS| 2|   3|        4| 4|        3|      10000|      10000|          1|       50|        60|      10
 16:08:35.247 [main] INFO  ModelSimulations.CombinedSimulation - **************Exiting CombinedSimulation********************
 ```
-
+<h4>Inferences from simulations</h4>
+<ol>
+<li>A well defined topology like ring network reduces the down time as we can see from the combined simulation the datacenter3 is not utilized which means it can process more cloudlets when in a correct network</li>
+<li>Round robin VM Allocation Policy along with spaceshared scheduling of cloudlets is more cost effective.</li>
+<li>The RAM and CPU usage are minimal for the given cloudlet configurations.</li>
+</ol>
 <h3>Dockerization of the project:</h3>
 <p>This is project has been made into a docker image and pushed to docker hub and accessed using https://hub.docker.com/r/mouliveleti/homework3_sasanka</p>
 <p>There are basically 2 ways to dockerize a sbt project</p>
