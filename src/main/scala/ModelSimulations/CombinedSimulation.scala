@@ -69,10 +69,13 @@ object CombinedSimulation {
     /* create a network of 3 datacenters with one broker in ring configuration*/
     val networkTopology = new BriteNetworkTopology()
     simulation.setNetworkTopology(networkTopology)
-    networkTopology.addLink(dataCenter1, broker, mainConfig.getDouble("NETWORK_BW"), mainConfig.getDouble("NETWORK_LATENCY"))
-    networkTopology.addLink(dataCenter2, broker, mainConfig.getDouble("NETWORK_BW"), mainConfig.getDouble("NETWORK_LATENCY"))
-    networkTopology.addLink(dataCenter3, broker, mainConfig.getDouble("NETWORK_BW"), mainConfig.getDouble("NETWORK_LATENCY"))
-
+//    networkTopology.addLink(dataCenter1, broker, mainConfig.getDouble("NETWORK_BW"), mainConfig.getDouble("NETWORK_LATENCY"))
+//    networkTopology.addLink(dataCenter2, broker, mainConfig.getDouble("NETWORK_BW"), mainConfig.getDouble("NETWORK_LATENCY"))
+//    networkTopology.addLink(dataCenter3, broker, mainConfig.getDouble("NETWORK_BW"), mainConfig.getDouble("NETWORK_LATENCY"))
+    networkTopology.addLink(broker, dataCenter3, mainConfig.getDouble("NETWORK_BW"), mainConfig.getDouble("NETWORK_LATENCY"))
+    networkTopology.addLink(dataCenter1, dataCenter2, mainConfig.getDouble("NETWORK_BW"), mainConfig.getDouble("NETWORK_LATENCY"))
+    networkTopology.addLink(dataCenter2, dataCenter3, mainConfig.getDouble("NETWORK_BW"), mainConfig.getDouble("NETWORK_LATENCY"))
+    networkTopology.addLink(dataCenter3, dataCenter1, mainConfig.getDouble("NETWORK_BW"), mainConfig.getDouble("NETWORK_LATENCY"))
 
     simulation.start()
 

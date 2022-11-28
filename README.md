@@ -363,8 +363,8 @@ sbt "runMain PaasSimulation"
 ```
 
 <h3>Combined Simulation with 3 Datacenters(Iaas, Saas, Paas)</h3>
-<p>A Ring topology is formed with a single broker and 3 datacenters Iaas, Saas, Paas</p>
-<img src="img/Combined.png"/>
+<p>A Ring Network Topology is formed with a single broker and 3 datacenters Iaas, Saas, Paas</p>
+<img src="img/combinedsimulation.png"/>
 
 <p>A simulation is ran based on the parameters from combinedsimulation.conf is ran and the results are below</p>
 
@@ -483,6 +483,11 @@ enablePlugins(
 mainClass in Compile := Some("RunAllSimulations")
 
 dockerBaseImage:= "openjdk:19"
+```
+<li>And run the following command</li>
+
+```
+sbt docker:publishLocal
 ```
 </ol>
 
