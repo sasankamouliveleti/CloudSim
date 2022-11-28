@@ -21,7 +21,7 @@ Note: This project runs only on top of Java 17+ so make sure you have appropriat
 
 <h3>Steps to follow to make this project run:</h3>
 <ol>
-<li>Clone this repository.</li>
+<li>Clone this repository and change directory into the cloned folder.</li>
 
 ```
 git clone https://github.com/sasankamouliveleti/Homework3_CloudSim.git
@@ -46,7 +46,7 @@ sbt test
 sbt run
 ```
 
-as there are multiple main classes you will be prompted with the class to choose. The description of classes is below
+there are multiple main classed and their description of classes is below. By default RunAllSimulation class executes which nothing but executing all the below main classes.
 <ol>
 <li>Simulation1 - Results out power consumed, cpu utilization metrics and summary of simulation results using default VM Allocation Policy</li>
 <li>Simulation2 - Results out the cost of the operation and summary of simulation results using default VM Allocation Policy</li>
